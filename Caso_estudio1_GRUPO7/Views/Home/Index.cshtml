@@ -1,0 +1,64 @@
+﻿@model char[,]
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Juego Gato</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid purple;
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>Juego Gato</h1>
+    <table>
+        @for (int i = 0; i < 3; i++)
+        {
+            <tr>
+                @for (int j = 0; j < 3; j++)
+                {
+                    <td>
+                        <button id="btn-@i-@j" onclick="realizarMovimiento(@i, @j)">@Model[i, j]</button>
+                    </td>
+                }
+            </tr>
+        }
+    </table>
+
+    <script>
+        function realizarMovimiento(fila, columna) {
+            document.getElementById('btn-' + fila + '-' + columna).innerHTML = 'X';
+            document.getElementById('btn-' + fila + '-' + columna).disabled = true;
+
+            fetch('/Home/RealizarMovimiento?fila=' + fila + '&columna=' + columna, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ocurrió un error al realizar el movimiento.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+               
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+</html>
