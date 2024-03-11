@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Caso_estudio1_GRUPO7.Models;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 public class UsuariosController : Controller
 {
@@ -23,32 +27,36 @@ public class UsuariosController : Controller
     {
         if (ModelState.IsValid)
         {
+            // Encriptar la contraseña antes de guardarla
+            usuario.Password = HashPassword(usuario.Password);
+
             _context.Users.Add(usuario);
             _context.SaveChanges();
-            return RedirectToAction("Index", "Home"); // Redirige a la vista principal después del registro exitoso
+            return RedirectToAction("Index", "Home");
         }
 
         return View(usuario);
     }
 
-    [HttpGet]
+    // GET: Usuarios/Login
     public IActionResult Login()
     {
         return View();
     }
 
+    // POST: Usuarios/Login
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Login(LoginViewModel login)
     {
         if (ModelState.IsValid)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == login.Username && u.Password == login.Password);
+            var hashedPassword = HashPassword(login.Password);
+            var user = _context.Users.FirstOrDefault(u => u.Username == login.Username && u.Password == hashedPassword);
 
             if (user != null)
             {
-                // Usuario autenticado, realiza las acciones necesarias (por ejemplo, establecer la sesión)
-                // Puedes redirigir a la vista principal o a cualquier otra vista que desees
+                // Usuario autenticado, realiza las acciones necesarias
                 return RedirectToAction("Index", "Home");
             }
 
@@ -58,4 +66,20 @@ public class UsuariosController : Controller
         return View(login);
     }
 
+    private string HashPassword(string password)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            // ComputeHash - returns byte array
+            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+            // Convert byte array to a string
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
 }
