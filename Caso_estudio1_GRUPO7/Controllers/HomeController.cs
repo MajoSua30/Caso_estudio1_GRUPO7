@@ -67,7 +67,7 @@ namespace Grupo.Controllers
 
         private void RealizarMovimientoComputadora()
         {
-            //  computadora realice su movimiento
+            //  computadora realiza su movimiento
             Random random = new Random();
             int fila, columna;
             do
@@ -82,13 +82,13 @@ namespace Grupo.Controllers
 
         private bool HayGanador(char jugador)
         {
-
+      
             return false;
         }
 
         private bool Empate()
         {
-
+           
             return false;
         }
 
