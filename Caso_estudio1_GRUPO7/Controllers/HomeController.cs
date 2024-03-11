@@ -32,14 +32,14 @@ namespace Grupo.Controllers
                 if (HayGanador('X'))
                 {
                     ViewBag.Resultado = "¡Has ganado!";
-                    return View("Resultado", _tablero);
+                    return View("Index", _tablero);
                 }
 
                 // hay un empate
                 if (Empate())
                 {
                     ViewBag.Resultado = "¡Empate!";
-                    return View("Resultado", _tablero);
+                    return View("Index", _tablero);
                 }
 
                 //  turno de la computadora
@@ -52,7 +52,7 @@ namespace Grupo.Controllers
                 if (HayGanador('O'))
                 {
                     ViewBag.Resultado = "¡Has perdido!";
-                    return View("Resultado", _tablero);
+                    return View("Index", _tablero);
                 }
 
                 // Redireccionar de nuevo 
@@ -79,6 +79,8 @@ namespace Grupo.Controllers
             // Marcar la casilla con el símbolo de la computadora
             _tablero[fila, columna] = 'O';
         }
+
+
 
         private bool HayGanador(char jugador)
         {
