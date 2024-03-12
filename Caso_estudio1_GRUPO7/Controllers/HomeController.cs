@@ -20,6 +20,7 @@ namespace Grupo.Controllers
         }
 
         [HttpPost]
+
         public IActionResult RealizarMovimiento(int fila, int columna)
         {
             // Verificar si la casilla está vacía
@@ -42,10 +43,10 @@ namespace Grupo.Controllers
                     return View("Index", _tablero);
                 }
 
-                //  turno de la computadora
+                // turno de la computadora
                 _turnoActual = 'O';
 
-                //  movimiento de la computadora
+                // movimiento de la computadora
                 RealizarMovimientoComputadora();
 
                 // Verificar si hay un ganador 
@@ -64,6 +65,8 @@ namespace Grupo.Controllers
                 return RedirectToAction("Error");
             }
         }
+
+
 
         private void RealizarMovimientoComputadora()
         {
