@@ -4,20 +4,63 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>Resultado</title>
+    <title>Juego de Gato</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
-    <h1>@ViewBag.Resultado</h1>
+    <h1>Juego de Gato</h1>
+    <h2>Turno actual: @ViewBag.TurnoActual</h2>
     <table>
         @for (int i = 0; i < 3; i++)
         {
             <tr>
                 @for (int j = 0; j < 3; j++)
                 {
-                    <td>@Model[i, j]</td>
+                    <td>
+                        <button id="btn-@i-@j" onclick="realizarMovimiento(@i, @j)" disabled>@Model[i, j]</button>
+                    </td>
                 }
             </tr>
         }
     </table>
+
+    <script>
+        function realizarMovimiento(fila, columna) {
+            document.getElementById('btn-' + fila + '-' + columna).innerHTML = '@ViewBag.TurnoActual';
+            document.getElementById('btn-' + fila + '-' + columna).disabled = true;
+
+            fetch('/Home/RealizarMovimiento?fila=' + fila + '&columna=' + columna, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ocurrió un error al realizar el movimiento.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Actualizar la vista si es necesario
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
 </body>
 </html>
