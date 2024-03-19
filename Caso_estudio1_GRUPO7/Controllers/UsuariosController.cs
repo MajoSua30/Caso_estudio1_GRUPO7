@@ -9,9 +9,9 @@ public class UsuariosController : Controller
 {
     private readonly CasoContext _context;
 
-    public UsuariosController(CasoContext context)
+    public UsuariosController()
     {
-        _context = context;
+        _context = new CasoContext();
     }
 
     // GET: Usuarios/Register
@@ -32,7 +32,7 @@ public class UsuariosController : Controller
 
             _context.Users.Add(usuario);
             _context.SaveChanges();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login");
         }
 
         return View(usuario);
@@ -57,7 +57,7 @@ public class UsuariosController : Controller
             if (user != null)
             {
                 // Usuario autenticado, realiza las acciones necesarias
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index");
             }
 
             ModelState.AddModelError("", "Nombre de usuario o contraseña incorrectos");
