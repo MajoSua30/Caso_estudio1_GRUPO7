@@ -2,12 +2,12 @@
 {
     public class Juego
     {
-        public char[,] Tablero { get; set; }
-        public char TurnoActual { get; set; }
+        public char[,] _tablero { get; set; }
+        public char _turnoActual { get; set; }
 
         public Juego()
         {
-            Tablero = new char[3, 3];
+            _tablero = new char[3, 3];
             ReiniciarTablero();
         }
 
@@ -17,10 +17,10 @@
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    Tablero[i, j] = '-';
+                    _tablero[i, j] = '-';
                 }
             }
-            TurnoActual = 'X';
+            _turnoActual = 'X';
         }
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 
-namespace Grupo.Controllers
+namespace Caso_estudio1_GRUPO7.Controllers
 {
     public class HomeController : Controller
     {
@@ -16,58 +16,60 @@ namespace Grupo.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.TurnoActual = _turnoActual;
             return View(_tablero);
         }
 
         [HttpPost]
         public IActionResult RealizarMovimiento(int fila, int columna)
         {
-            // Verificar si la casilla está vacía
             if (_tablero[fila, columna] == '-')
             {
-                // Marcar la casilla 
-                _tablero[fila, columna] = 'X';
-
-                // hay un ganador
-                if (HayGanador('X'))
+                _tablero[fila, columna] = _turnoActual;
+                if (HayGanador(_turnoActual))
                 {
-                    ViewBag.Resultado = "¡Has ganado!";
-                    return View("Resultado", _tablero);
+                    ViewBag.Resultado = _turnoActual == 'X' ? "¡Has ganado!" : "¡Has perdido!";
+                    ReiniciarJuego();
+                    return View("Index", _tablero);
                 }
-
-                // hay un empate
-                if (Empate())
+                else if (Empate())
                 {
                     ViewBag.Resultado = "¡Empate!";
-                    return View("Resultado", _tablero);
+                    ReiniciarJuego();
+                    return View("Index", _tablero);
                 }
 
-                //  turno de la computadora
-                _turnoActual = 'O';
+                // Cambiar turno
+                _turnoActual = _turnoActual == 'X' ? 'O' : 'X';
 
-                //  movimiento de la computadora
-                RealizarMovimientoComputadora();
-
-                // Verificar si hay un ganador 
-                if (HayGanador('O'))
+                if (_turnoActual == 'O')
                 {
-                    ViewBag.Resultado = "¡Has perdido!";
-                    return View("Resultado", _tablero);
+                    RealizarMovimientoComputadora();
+                    if (HayGanador(_turnoActual))
+                    {
+                        ViewBag.Resultado = "¡Has perdido!";
+                        ReiniciarJuego();
+                        return View("Index", _tablero);
+                    }
+                    else if (Empate())
+                    {
+                        ViewBag.Resultado = "¡Empate!";
+                        ReiniciarJuego();
+                        return View("Index", _tablero);
+                    }
+                    _turnoActual = 'X'; // Volver al turno del jugador
                 }
 
-                // Redireccionar de nuevo 
                 return RedirectToAction("Index");
             }
             else
             {
-                // Casilla ocupada
                 return RedirectToAction("Error");
             }
         }
 
         private void RealizarMovimientoComputadora()
         {
-            //  computadora realice su movimiento
             Random random = new Random();
             int fila, columna;
             do
@@ -76,25 +78,42 @@ namespace Grupo.Controllers
                 columna = random.Next(3);
             } while (_tablero[fila, columna] != '-');
 
-            // Marcar la casilla con el símbolo de la computadora
-            _tablero[fila, columna] = 'O';
+            _tablero[fila, columna] = _turnoActual;
         }
 
         private bool HayGanador(char jugador)
         {
+            // Verificar filas, columnas y diagonales
+            for (int i = 0; i < 3; i++)
+            {
+                if ((_tablero[i, 0] == jugador && _tablero[i, 1] == jugador && _tablero[i, 2] == jugador) ||
+                    (_tablero[0, i] == jugador && _tablero[1, i] == jugador && _tablero[2, i] == jugador))
+                    return true;
+            }
+
+            // Diagonales
+            if ((_tablero[0, 0] == jugador && _tablero[1, 1] == jugador && _tablero[2, 2] == jugador) ||
+                (_tablero[0, 2] == jugador && _tablero[1, 1] == jugador && _tablero[2, 0] == jugador))
+                return true;
 
             return false;
         }
 
         private bool Empate()
         {
-
-            return false;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    if (_tablero[i, j] == '-')
+                        return false;
+                }
+            }
+            return true;
         }
 
         private void ReiniciarJuego()
         {
-            // casillas vacías
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
@@ -102,8 +121,6 @@ namespace Grupo.Controllers
                     _tablero[i, j] = '-';
                 }
             }
-
-            //  empieza primero
             _turnoActual = 'X';
         }
     }

@@ -28,7 +28,7 @@
                 @for (int j = 0; j < 3; j++)
                 {
                     <td>
-                        <button id="btn-@i-@j" onclick="realizarMovimiento(@i, @j)">@Model[i, j]</button>
+                        <button id="btn-@i-@j" onclick="RealizarMovimiento(@i, @j)">@Model[i, j]</button>
                     </td>
                 }
             </tr>
@@ -36,7 +36,7 @@
     </table>
 
     <script>
-        function realizarMovimiento(fila, columna) {
+        function RealizarMovimiento(fila, columna) {
             document.getElementById('btn-' + fila + '-' + columna).innerHTML = 'X';
             document.getElementById('btn-' + fila + '-' + columna).disabled = true;
 
@@ -53,7 +53,7 @@
                     return response.json();
                 })
                 .then(data => {
-               
+                    // Aquí puedes hacer algo con la respuesta si es necesario
                 })
                 .catch(error => {
                     console.error('Error:', error);
