@@ -12,7 +12,6 @@ namespace Caso_estudio1_GRUPO7.Models
         [Required]
         public string Password { get; set; }
 
-        [Column(TypeName = "VARCHAR(MAX)")]
-        public string Photo { get; set; }
+        public byte[]? Photo { get; set; }
     }
 }

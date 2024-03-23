@@ -4,14 +4,16 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Http; // Necesario para IFormFile
+using System.IO; // Necesario para MemoryStream
 
 public class UsuariosController : Controller
 {
     private readonly CasoContext _context;
 
-    public UsuariosController()
+    public UsuariosController(CasoContext context)
     {
-        _context = new CasoContext();
+        _context = context;
     }
 
     // GET: Usuarios/Register
@@ -20,7 +22,13 @@ public class UsuariosController : Controller
         return View();
     }
 
-    // POST: Usuarios/Register
+    // GET: Usuarios/Login
+    public IActionResult Login()
+    {
+        return View();
+    }
+
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Register(Usuarios usuario)
@@ -38,10 +46,31 @@ public class UsuariosController : Controller
         return View(usuario);
     }
 
-    // GET: Usuarios/Login
-    public IActionResult Login()
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult RegisterWithPhoto(Usuarios usuario, IFormFile photoFile)
     {
-        return View();
+        if (ModelState.IsValid)
+        {
+            if (photoFile != null && photoFile.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    photoFile.CopyTo(memoryStream);
+                    usuario.Photo = memoryStream.ToArray(); // Guarda la foto como un array de bytes
+                }
+            }
+
+            // Encriptar la contraseña antes de guardarla
+            usuario.Password = HashPassword(usuario.Password);
+
+            _context.Users.Add(usuario);
+            _context.SaveChanges();
+            return RedirectToAction("Login");
+        }
+
+        return View("Register", usuario); 
     }
 
     // POST: Usuarios/Login
@@ -56,11 +85,11 @@ public class UsuariosController : Controller
 
             if (user != null)
             {
-                // Usuario autenticado, realiza las acciones necesarias
-                return RedirectToAction("Index");
+              
+                return RedirectToAction("Index", "Home");
             }
 
-            ModelState.AddModelError("", "Nombre de usuario o contraseña incorrectos");
+            ModelState.AddModelError("", "Nombre de usuario o contraseña incorrectos.");
         }
 
         return View(login);
@@ -70,10 +99,8 @@ public class UsuariosController : Controller
     {
         using (var sha256 = SHA256.Create())
         {
-            // ComputeHash - returns byte array
             byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
 
-            // Convert byte array to a string
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < bytes.Length; i++)
             {
