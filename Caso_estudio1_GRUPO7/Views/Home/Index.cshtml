@@ -1,64 +1,42 @@
-﻿@model char[,]
+﻿@model Caso_estudio1_GRUPO7.Juego
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Juego Gato</title>
-    <style>
-        table {
-            border-collapse: collapse;
-        }
+@{
+    ViewData["Title"] = "Gato";
+}
 
-        table, th, td {
-            border: 1px solid purple;
-            width: 100px;
-            height: 100px;
-            text-align: center;
-            vertical-align: middle;
-        }
-    </style>
-</head>
-<body>
-    <h1>Juego Gato</h1>
-    <table>
-        @for (int i = 0; i < 3; i++)
-        {
-            <tr>
-                @for (int j = 0; j < 3; j++)
-                {
-                    <td>
-                        <button id="btn-@i-@j" onclick="RealizarMovimiento(@i, @j)">@Model[i, j]</button>
-                    </td>
-                }
-            </tr>
-        }
-    </table>
+<h1>Gato</h1>
 
-    <script>
-        function RealizarMovimiento(fila, columna) {
-            document.getElementById('btn-' + fila + '-' + columna).innerHTML = 'X';
-            document.getElementById('btn-' + fila + '-' + columna).disabled = true;
+@if (!String.IsNullOrEmpty(ViewBag.Message))
+{
+    <p>@ViewBag.Message</p>
+}
 
-            fetch('/Home/RealizarMovimiento?fila=' + fila + '&columna=' + columna, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ocurrió un error al realizar el movimiento.');
+<table border="1">
+    @for (int i = 0; i < 3; i++)
+    {
+        <tr>
+            @for (int j = 0; j < 3; j++)
+            {
+                <td>
+                    @{
+                        var valorCasilla = Model.Tablero[i, j];
+                        var casillaOcupada = valorCasilla != ' ';
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    // Aquí puedes hacer algo con la respuesta si es necesario
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-    </script>
-</body>
-</html>
+
+                    @if (casillaOcupada)
+                    {
+                        <span>@valorCasilla</span>
+                    }
+                    else
+                    {
+                        <form asp-controller="Home" asp-action="Jugada" method="post">
+                            <input type="hidden" name="fila" value="@i" />
+                            <input type="hidden" name="columna" value="@j" />
+                            <input type="submit" value=" " />
+                        </form>
+                    }
+                </td>
+            }
+        </tr>
+    }
+</table>
