@@ -5,112 +5,85 @@ namespace Caso_estudio1_GRUPO7.Controllers
 {
     public class HomeController : Controller
     {
-        private char[,] _tablero;
-        private char _turnoActual;
-
-        public HomeController()
-        {
-            _tablero = new char[3, 3];
-            ReiniciarJuego();
-        }
+        private static char[,] _tablero = new char[3, 3];
+        private static char _turnoActual = 'X';
 
         public IActionResult Index()
         {
             ViewBag.TurnoActual = _turnoActual;
-            return View(_tablero);
+            ViewBag.Resultado = TempData["Resultado"]?.ToString();
+            return View("Index", _tablero);
         }
 
         [HttpPost]
         public IActionResult RealizarMovimiento(int fila, int columna)
         {
-            if (_tablero[fila, columna] == '-')
+            // Si la casilla ya está ocupada, simplemente redirige a Index
+            if (_tablero[fila, columna] != '-')
             {
-                _tablero[fila, columna] = _turnoActual;
-                if (HayGanador(_turnoActual))
-                {
-                    ViewBag.Resultado = _turnoActual == 'X' ? "¡Has ganado!" : "¡Has perdido!";
-                    ReiniciarJuego();
-                    return View("Index", _tablero);
-                }
-                else if (Empate())
-                {
-                    ViewBag.Resultado = "¡Empate!";
-                    ReiniciarJuego();
-                    return View("Index", _tablero);
-                }
-
-                // Cambiar turno
-                _turnoActual = _turnoActual == 'X' ? 'O' : 'X';
-
-                if (_turnoActual == 'O')
-                {
-                    RealizarMovimientoComputadora();
-                    if (HayGanador(_turnoActual))
-                    {
-                        ViewBag.Resultado = "¡Has perdido!";
-                        ReiniciarJuego();
-                        return View("Index", _tablero);
-                    }
-                    else if (Empate())
-                    {
-                        ViewBag.Resultado = "¡Empate!";
-                        ReiniciarJuego();
-                        return View("Index", _tablero);
-                    }
-                    _turnoActual = 'X'; // Volver al turno del jugador
-                }
-
+                TempData["Resultado"] = "Movimiento no válido, casilla ya ocupada.";
                 return RedirectToAction("Index");
             }
-            else
+
+            // Realiza el movimiento del jugador
+            _tablero[fila, columna] = _turnoActual;
+
+            // Verifica si el movimiento del jugador conduce a una victoria o empate
+            if (VerificarFinDelJuego(_turnoActual))
             {
-                return RedirectToAction("Error");
+                return RedirectToAction("Index");
             }
+
+            // Cambia el turno al oponente
+            _turnoActual = _turnoActual == 'X' ? 'O' : 'X';
+
+            // Realiza el movimiento de la computadora automáticamente
+            RealizarMovimientoComputadora();
+
+            // Verifica si el movimiento de la computadora conduce a una victoria o empate
+            VerificarFinDelJuego(_turnoActual);
+
+            // Cambia el turno de nuevo al jugador
+            _turnoActual = 'X';
+
+            return RedirectToAction("Index");
         }
 
         private void RealizarMovimientoComputadora()
         {
+            // Lógica simple para elegir una casilla vacía al azar
             Random random = new Random();
-            int fila, columna;
-            do
+            bool movimientoHecho = false;
+            while (!movimientoHecho)
             {
-                fila = random.Next(3);
-                columna = random.Next(3);
-            } while (_tablero[fila, columna] != '-');
-
-            _tablero[fila, columna] = _turnoActual;
+                int fila = random.Next(3);
+                int columna = random.Next(3);
+                if (_tablero[fila, columna] == '-')
+                {
+                    _tablero[fila, columna] = _turnoActual;
+                    movimientoHecho = true;
+                }
+            }
         }
 
-        private bool HayGanador(char jugador)
+        private bool VerificarFinDelJuego(char jugador)
         {
-            // Verificar filas, columnas y diagonales
-            for (int i = 0; i < 3; i++)
+            if (HayGanador(jugador))
             {
-                if ((_tablero[i, 0] == jugador && _tablero[i, 1] == jugador && _tablero[i, 2] == jugador) ||
-                    (_tablero[0, i] == jugador && _tablero[1, i] == jugador && _tablero[2, i] == jugador))
-                    return true;
-            }
-
-            // Diagonales
-            if ((_tablero[0, 0] == jugador && _tablero[1, 1] == jugador && _tablero[2, 2] == jugador) ||
-                (_tablero[0, 2] == jugador && _tablero[1, 1] == jugador && _tablero[2, 0] == jugador))
+                TempData["Resultado"] = jugador == 'X' ? "¡X ha ganado!" : "¡O ha ganado!";
+                ReiniciarJuego();
                 return true;
-
+            }
+            else if (Empate())
+            {
+                TempData["Resultado"] = "¡Empate!";
+                ReiniciarJuego();
+                return true;
+            }
             return false;
         }
 
-        private bool Empate()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    if (_tablero[i, j] == '-')
-                        return false;
-                }
-            }
-            return true;
-        }
+        // Métodos HayGanador y Empate aquí...
 
         private void ReiniciarJuego()
         {
