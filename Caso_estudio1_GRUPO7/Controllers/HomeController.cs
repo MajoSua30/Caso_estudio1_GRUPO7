@@ -1,100 +1,38 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
+using Caso_estudio1_GRUPO7.Models;
 
 namespace Caso_estudio1_GRUPO7.Controllers
 {
     public class HomeController : Controller
     {
-        private static char[,] _tablero = new char[3, 3];
-        private static char _turnoActual = 'X';
+        private Juego juego; // Mantenemos una instancia del juego en el controlador
+
+        public HomeController()
+        {
+            juego = new Juego();
+        }
 
         public IActionResult Index()
         {
-            ViewBag.TurnoActual = _turnoActual;
-            ViewBag.Resultado = TempData["Resultado"]?.ToString();
-            return View("Index", _tablero);
+            return View(juego);
         }
 
         [HttpPost]
-        public IActionResult RealizarMovimiento(int fila, int columna)
+        public IActionResult Jugada(int fila, int columna)
         {
-            // Si la casilla ya está ocupada, simplemente redirige a Index
-            if (_tablero[fila, columna] != '-')
+            if (juego.Tablero[fila, columna] != ' ')
             {
-                TempData["Resultado"] = "Movimiento no válido, casilla ya ocupada.";
-                return RedirectToAction("Index");
+                ViewBag.Message = "La casilla seleccionada ya está ocupada. Por favor, elige otra.";
             }
-
-            // Realiza el movimiento del jugador
-            _tablero[fila, columna] = _turnoActual;
-
-            // Verifica si el movimiento del jugador conduce a una victoria o empate
-            if (VerificarFinDelJuego(_turnoActual))
+            else
             {
-                return RedirectToAction("Index");
-            }
-
-            // Cambia el turno al oponente
-            _turnoActual = _turnoActual == 'X' ? 'O' : 'X';
-
-            // Realiza el movimiento de la computadora automáticamente
-            RealizarMovimientoComputadora();
-
-            // Verifica si el movimiento de la computadora conduce a una victoria o empate
-            VerificarFinDelJuego(_turnoActual);
-
-            // Cambia el turno de nuevo al jugador
-            _turnoActual = 'X';
-
-            return RedirectToAction("Index");
-        }
-
-        private void RealizarMovimientoComputadora()
-        {
-            // Lógica simple para elegir una casilla vacía al azar
-            Random random = new Random();
-            bool movimientoHecho = false;
-            while (!movimientoHecho)
-            {
-                int fila = random.Next(3);
-                int columna = random.Next(3);
-                if (_tablero[fila, columna] == '-')
+                juego.Jugar(fila, columna);
+                if (!juego.JuegoTerminado && !juego.Empate)
                 {
-                    _tablero[fila, columna] = _turnoActual;
-                    movimientoHecho = true;
+                    juego.JugadaComputadora();
                 }
             }
-        }
-
-        private bool VerificarFinDelJuego(char jugador)
-        {
-            if (HayGanador(jugador))
-            {
-                TempData["Resultado"] = jugador == 'X' ? "¡X ha ganado!" : "¡O ha ganado!";
-                ReiniciarJuego();
-                return true;
-            }
-            else if (Empate())
-            {
-                TempData["Resultado"] = "¡Empate!";
-                ReiniciarJuego();
-                return true;
-            }
-            return false;
-        }
-
-        // Métodos HayGanador y Empate aquí...
-
-        private void ReiniciarJuego()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    _tablero[i, j] = '-';
-                }
-            }
-            _turnoActual = 'X';
+            return View("Index", juego);
         }
     }
 }
